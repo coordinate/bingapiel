@@ -65,8 +65,8 @@
   "Post your ID and get access_token."
   (let* ((command (format "curl -d \"grant_type=%s&client_id=%s&client_secret=%s&scope=%s\" %s"
                           "client_credentials"
-                          bingapi-clientid
-                          bingapi-clientsecret
+                          (url-hexify-string bingapi-clientid)
+                          (url-hexify-string bingapi-clientsecret)
                           bingapi-scope
                           "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13"))
          (output (shell-command-to-string command))

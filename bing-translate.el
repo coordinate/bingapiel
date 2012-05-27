@@ -4,7 +4,7 @@
 ;; Author: zxy <gcoordinate@gmail.com>
 ;; Maintainer: zxy <gcoordinate@gmail.com>
 ;; Created: May 2012
-;; Version: 0.2
+;; Version: 1.0
 
 ;; This file is NOT part of Emacs.
 ;;
@@ -25,10 +25,15 @@
 ;; Installation
 ;; ============
 ;;
-;; (add-to-list 'load-path (concat git-path "translate-emacs-toolkit"))
+;; (add-to-list 'load-path (concat plugin-path "bingapiel"))
 ;;
-;; ;; Your appId. Application at http://www.bing.com/toolbox/bingdeveloper/
-;; (defvar bingtranslate-appId "your-appId")
+;; ;; Your bing api client_id.
+;; ;; Get from https://datamarket.azure.com/developer/applications/
+;; (defvar bingapi-clientid "bingapiel")
+;;
+;; ;; Your bing api client_secret.
+;; ;; Get from https://datamarket.azure.com/developer/applications/
+;; (defvar bingapi-clientsecret "bq4h4FPS14CBDCBs7tsqiqVD6YVG4bmt3ftkbKBQKmk=")
 ;;
 ;; ;; Your priority language to translate from.
 ;; (defvar bingtranslate-from-priority "en")
@@ -37,6 +42,8 @@
 ;; (defvar bingtranslate-to-priority "zh-CHS")
 ;;
 ;; (require 'bing-translate)
+;;
+;; ;; key bounding
 ;; (global-set-key [M-f1] 'bingtranslate-region-or-input)
 ;;
 ;; ;; add a pair of language
@@ -69,6 +76,37 @@
 
 ;; http://www.emreakkas.com/internationalization/microsoft-translator-
 ;;        api-languages-list-language-codes-and-names
+;; all codes list here
+;; "en"
+;; "et"
+;; "fi"
+;; "fr"
+;; "nl"
+;; "el"
+;; "he"
+;; "ht"
+;; "hu"
+;; "id"
+;; "it"
+;; "ja"
+;; "ko"
+;; "lt"
+;; "lv"
+;; "no"
+;; "pl"
+;; "pt"
+;; "ro"
+;; "es"
+;; "ru"
+;; "sk"
+;; "sl"
+;; "sv"
+;; "th"
+;; "tr"
+;; "uk"
+;; "vi"
+;; "zh-CHS"
+;; "zh-CHT"
 (defvar bingtranslate-language-list
   '("en"
     "zh-CHS"
@@ -77,36 +115,6 @@
     "cs"
     "da"
     "de"
-    ;; "en"
-    ;; "et"
-    ;; "fi"
-    ;; "fr"
-    ;; "nl"
-    ;; "el"
-    ;; "he"
-    ;; "ht"
-    ;; "hu"
-    ;; "id"
-    ;; "it"
-    ;; "ja"
-    ;; "ko"
-    ;; "lt"
-    ;; "lv"
-    ;; "no"
-    ;; "pl"
-    ;; "pt"
-    ;; "ro"
-    ;; "es"
-    ;; "ru"
-    ;; "sk"
-    ;; "sl"
-    ;; "sv"
-    ;; "th"
-    ;; "tr"
-    ;; "uk"
-    ;; "vi"
-    ;; "zh-CHS"
-    ;; "zh-CHT"
     ))
 
 (defvar bingtranslate-language-pair (make-hash-table :test 'equal))
@@ -135,6 +143,7 @@
 
 (defun bingtranslate-url-callback (status)
   "Switch to the buffer returned by `url-retreive'."
+  ;; (message (buffer-string)))
   (goto-char (point-min))
   (let* ((xmldata (decode-coding-string (buffer-string) 'utf-8))
          (result nil))
@@ -142,7 +151,10 @@
         (progn
           (kill-buffer (current-buffer))
           (setq bingtranslate-appId (bingapi-post-and-get-accesstoken))
-          (message "[bingapi] The incoming token has expired! We got new one."))
+          (message "[bingapi] The incoming token has expired! We got new one.")
+          (url-retrieve (bingtranslate-make-url bingtranslate-history-text
+                                                bingtranslate-history-from
+                                                bingtranslate-history-to) 'bingtranslate-url-callback))
       (progn
         (when (string-match "\">\\(.*\\)</string>" xmldata 0)
           (setq result (match-string 1 xmldata)))
@@ -166,12 +178,15 @@
       (if (equal nil (current-word))
           (setq defaultext bingtranslate-history-text)
         (setq defaultext (current-word)))
-      (setq bingtranslate-history-text (read-string (format "[bingtranslate] text (default %s): " defaultext)
-                                                    nil nil defaultext nil))))
+      (setq bingtranslate-history-text (read-string
+                                        (format "[bingtranslate] text (default %s): " defaultext)
+                                        nil nil defaultext nil))))
   ;; read other infor
-  (setq tmptype (completing-read (format "[bingtranslate] language pair name or from language (default %s): " bingtranslate-from-priority)
-                                 bingtranslate-language-list
-                                 nil t nil nil bingtranslate-from-priority))
+  (setq tmptype (completing-read
+                 (format "[bingtranslate] language pair name or from language (default %s): "
+                         bingtranslate-from-priority)
+                 bingtranslate-language-list
+                 nil t nil nil bingtranslate-from-priority))
   ;; get pair
   (setq pair (gethash tmptype bingtranslate-language-pair))
   (if (and (not (equal "" pair))
@@ -181,9 +196,11 @@
         (setq bingtranslate-history-to (car (cdr pair))))
     (progn
       (setq bingtranslate-history-from tmptype)
-      (setq bingtranslate-history-to (completing-read (format "[bingtranslate] to language (default %s): " bingtranslate-to-priority)
-                                                      bingtranslate-language-list
-                                                      nil t nil nil bingtranslate-to-priority))
+      (setq bingtranslate-history-to (completing-read
+                                      (format "[bingtranslate] to language (default %s): "
+                                              bingtranslate-to-priority)
+                                      bingtranslate-language-list
+                                      nil t nil nil bingtranslate-to-priority))
       ))
   (setq result (gethash (concat bingtranslate-history-text " from "
                                 bingtranslate-history-from " to "

@@ -14,7 +14,7 @@
   translate history* and so on.
 
   This toolkit tested on emacs23.4.
-  
+
 * USAGE
 ** For bing translate api
 1. Install [[http://www.gnu.org/software/emacs/][emacs]].
@@ -76,8 +76,7 @@ http://coordinate.sinaapp.com/?p=157.
 * LICENSE
 This toolkit is licensed under the GPL v3.
 
-* AUTHOR'S WORDS 
+* AUTHOR'S WORDS
 If you find a bug, please post at [[https://code.google.com/p/appengine-emacs-toolkit/issues/list][Issues]]. If you have not find a
 bug and feel this project helpful, please star it. Every star can
 make me know what I do can help other people and drove me forward.
-
