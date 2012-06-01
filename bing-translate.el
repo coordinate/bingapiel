@@ -36,10 +36,10 @@
 ;; (defvar bingapi-clientsecret "bq4h4FPS14CBDCBs7tsqiqVD6YVG4bmt3ftkbKBQKmk=")
 ;;
 ;; ;; Your priority language to translate from.
-;; (defvar bingtranslate-from-priority "en")
+;; (defvar from-priority "en")
 ;;
 ;; ;; Your priority language to translate to.
-;; (defvar bingtranslate-to-priority "zh-CHS")
+;; (defvar to-priority "zh-CHS")
 ;;
 ;; (require 'bing-translate)
 ;;
@@ -57,67 +57,28 @@
 
 ;; public var
 
-(defcustom bingtranslate-service "http://api.microsofttranslator.com/V2/Http.svc/Translate"
+(defcustom bingtranslate-service "http://api.microsofttranslator.com/V2/Http.svc/"
   "Service to use for translation."
   :group 'bingapi
   :type 'string)
 
-(defcustom bingtranslate-from-priority "en"
-  "Priority from language."
+(defcustom bingtranslate-auto-detect nil
+  "Set if auto detect language."
   :group 'bingapi
-  :type 'string)
-
-(defcustom bingtranslate-to-priority "zh-CHS"
-  "Priority to language."
-  :group 'bingapi
-  :type 'string)
-
-;; private var
+  :type 'boolean)
 
 ;; http://www.emreakkas.com/internationalization/microsoft-translator-
 ;;        api-languages-list-language-codes-and-names
-;; all codes list here
-;; "en"
-;; "et"
-;; "fi"
-;; "fr"
-;; "nl"
-;; "el"
-;; "he"
-;; "ht"
-;; "hu"
-;; "id"
-;; "it"
-;; "ja"
-;; "ko"
-;; "lt"
-;; "lv"
-;; "no"
-;; "pl"
-;; "pt"
-;; "ro"
-;; "es"
-;; "ru"
-;; "sk"
-;; "sl"
-;; "sv"
-;; "th"
-;; "tr"
-;; "uk"
-;; "vi"
-;; "zh-CHS"
-;; "zh-CHT"
-(defvar bingtranslate-language-list
-  '("en"
-    "zh-CHS"
-    "zh-CHT"
-    "ar"
-    "cs"
-    "da"
-    "de"
-    ))
+(defcustom bingtranslate-language-list '()
+  "list all language to use."
+  :group 'bingapi
+  :type 'list)
 
-(defvar bingtranslate-language-pair (make-hash-table :test 'equal))
+;; private var
+
+(defvar bingtranslate-language-pair-hash (make-hash-table :test 'equal))
+
+(defvar bingtranslate-language-pair-list '())
 
 (defvar bingtranslate-history-hash (make-hash-table :test 'equal))
 
@@ -131,44 +92,139 @@
 
 ;; defun
 
-(defun bingtranslate-make-url (text from to)
+(defun bingtranslate-make-url (request args)
   "Generate the url to send to the translation service."
-  (when (equal nil bingtranslate-appId)
+  ;; get access_token
+  (unless bingtranslate-appId
     (setq bingtranslate-appId (bingapi-post-and-get-accesstoken)))
-  (concat bingtranslate-service
-          "?appId=Bearer+" bingtranslate-appId
-          "&from=" from
-          "&to=" to
-          "&text=" (url-hexify-string text)))
+  ;; make url with bingtranslate-service
+  (setq url
+        (concat bingtranslate-service
+                ;; and request type
+                request
+                ;; and appID
+                "appID=Bearer+"(url-hexify-string bingtranslate-appId)))
+  ;; and arguments
+  (if args
+      (concat url "&"
+              (mapconcat (lambda (arg)
+                           (concat (url-hexify-string (car arg)) "="
+                                   (decode-coding-string
+                                    (url-hexify-string (car (cdr arg)))
+                                    'utf-8))) args "&"))
+    url))
+
+(defun bingtranslate-getlanguagesfortranslate ()
+  "Obtain a list of language codes representing languages that are
+supported by the Translation Service."
+  ;; get first time
+  (let ((buf (url-retrieve-synchronously
+              (bingtranslate-make-url
+               "GetLanguagesForTranslate?" nil))))
+    (if buf
+        (with-current-buffer buf
+          (let* ((xmldata (decode-coding-string (buffer-string) 'utf-8))
+                 (result nil))
+            (kill-buffer (current-buffer))
+            ;; check access_taken
+            (when (equal "expired" (bingapi-check-accesstoken xmldata))
+              ;; detect secend time
+              (setq buf (url-retrieve-synchronously
+                         (bingtranslate-make-url
+                          "GetLanguagesForTranslate?" nil)))
+              (if buf
+                  (with-current-buffer buf
+                    (setq xmldata (decode-coding-string (buffer-string) 'utf-8))
+                    (kill-buffer (current-buffer)))
+                (error "[bingtranslate] Could not get language for translate!")))
+            ;; get language code
+            (when (string-match "<string>\\(.*\\)</string>" xmldata 0)
+              (setq result (match-string 1 xmldata))
+              (split-string result "</string><string>"))))
+      (error "[bingtranslate] Could not get language for translate!"))))
+
+(defun bingtranslate-checklanguageslist ()
+  "get language list."
+  (condition-case nil
+      (when (equal 0 (length bingtranslate-language-list))
+        (setq bingtranslate-language-list
+              (bingtranslate-getlanguagesfortranslate)))
+    (error
+     (error "[bingtranslate] Cannot connect to network!"))))
+
+(defun bingtranslate-detect (text)
+  "detect language code"
+  ;; detect first time
+  (let ((buf (url-retrieve-synchronously
+              (bingtranslate-make-url
+               "Detect?"
+               (list (list "text" text))))))
+    (if buf
+        (with-current-buffer buf
+          (let* ((xmldata (decode-coding-string (buffer-string) 'utf-8))
+                 (result nil))
+            (kill-buffer (current-buffer))
+            ;; check access_taken
+            (when (equal "expired" (bingapi-check-accesstoken xmldata))
+              ;; detect secend time
+              (setq buf (url-retrieve-synchronously
+                         (bingtranslate-make-url
+                          "Detect?"
+                          (list (list "text" text)))))
+              (if buf
+                  (with-current-buffer buf
+                    (setq xmldata (decode-coding-string (buffer-string) 'utf-8))
+                    (kill-buffer (current-buffer)))
+                (error "[bingtranslate] Could not detect language!")))
+            ;; get language code
+            (when (string-match "\">\\(.*\\)</string>" xmldata 0)
+              (setq result (match-string 1 xmldata)))
+            result))
+      (error "[bingtranslate] Could not detect language!"))))
+
+(defun bingtranslate-priority-code (ignorecode codes)
+  "get priority language code"
+  (setq firstcode (car codes))
+  (if (or (equal nil codes)
+          (equal 0 (length codes)))
+      "en"
+    (if (equal 1 (length codes))
+        firstcode
+      (if (equal ignorecode firstcode)
+          (bingtranslate-priority-code ignorecode (cdr codes))
+        firstcode))))
 
 (defun bingtranslate-url-callback (status)
-  "Switch to the buffer returned by `url-retreive'."
-  ;; (message (buffer-string)))
-  (goto-char (point-min))
+  "callback of bingtranslate-region-or-input."
   (let* ((xmldata (decode-coding-string (buffer-string) 'utf-8))
          (result nil))
-    (if (string-match "Get a new access token from the Authorization Server" xmldata 0)
-        (progn
-          (kill-buffer (current-buffer))
-          (setq bingtranslate-appId (bingapi-post-and-get-accesstoken))
-          (message "[bingapi] The incoming token has expired! We got new one.")
-          (url-retrieve (bingtranslate-make-url bingtranslate-history-text
-                                                bingtranslate-history-from
-                                                bingtranslate-history-to) 'bingtranslate-url-callback))
-      (progn
-        (when (string-match "\">\\(.*\\)</string>" xmldata 0)
-          (setq result (match-string 1 xmldata)))
-        (kill-new result)
-        (kill-buffer (current-buffer))
-        (puthash (concat bingtranslate-history-text " from "
-                         bingtranslate-history-from " to "
-                         bingtranslate-history-to) result bingtranslate-history-hash)
-        (message result)))
-    ))
+    (kill-buffer (current-buffer))
+    ;; check access_token
+    (if (equal "expired" (bingapi-check-accesstoken xmldata))
+        (bingtranslate-url-retrieve)
+      ;; get translate
+      (when (string-match "\">\\(.*\\)</string>" xmldata 0)
+        (setq result (match-string 1 xmldata)))
+      (puthash (concat bingtranslate-history-text " from "
+                       bingtranslate-history-from " to "
+                       bingtranslate-history-to)
+               result bingtranslate-history-hash)
+      (kill-new result)
+      (message result))))
+
+(defun bingtranslate-url-retrieve ()
+  "call url-retrieve to translate."
+  (url-retrieve (bingtranslate-make-url
+                 "Translate?"
+                 (list (list "text" bingtranslate-history-text)
+                       (list "from" bingtranslate-history-from)
+                       (list "to" bingtranslate-history-to)))
+                'bingtranslate-url-callback))
 
 (defun bingtranslate-region-or-input ()
   "Translate region or input"
   (interactive)
+  (bingtranslate-checklanguageslist)
   ;; if marked
   (if (and mark-active
            (/= (point) (mark)))
@@ -178,17 +234,23 @@
       (if (equal nil (current-word))
           (setq defaultext bingtranslate-history-text)
         (setq defaultext (current-word)))
-      (setq bingtranslate-history-text (read-string
-                                        (format "[bingtranslate] text (default %s): " defaultext)
-                                        nil nil defaultext nil))))
+      (setq bingtranslate-history-text
+            (read-string
+             (format "[bingtranslate] text (default %s): " defaultext)
+             nil nil defaultext nil))))
+  (if (equal "" bingtranslate-history-text)
+      (error "[bingtranslate] Translate text must not be ''."))
   ;; read other infor
+  (if bingtranslate-auto-detect
+      (setq from-priority (bingtranslate-detect bingtranslate-history-text))
+    (setq from-priority (car bingtranslate-language-list)))
   (setq tmptype (completing-read
                  (format "[bingtranslate] language pair name or from language (default %s): "
-                         bingtranslate-from-priority)
+                         from-priority)
                  bingtranslate-language-list
-                 nil t nil nil bingtranslate-from-priority))
+                 nil t nil nil from-priority))
   ;; get pair
-  (setq pair (gethash tmptype bingtranslate-language-pair))
+  (setq pair (gethash tmptype bingtranslate-language-pair-hash))
   (if (and (not (equal "" pair))
            (not (equal nil pair)))
       (progn
@@ -196,22 +258,25 @@
         (setq bingtranslate-history-to (car (cdr pair))))
     (progn
       (setq bingtranslate-history-from tmptype)
+      (setq to-priority (bingtranslate-priority-code from-priority bingtranslate-language-list))
       (setq bingtranslate-history-to (completing-read
                                       (format "[bingtranslate] to language (default %s): "
-                                              bingtranslate-to-priority)
+                                              to-priority)
                                       bingtranslate-language-list
-                                      nil t nil nil bingtranslate-to-priority))
-      ))
+                                      nil t nil nil to-priority))))
+  ;; check if have result
   (setq result (gethash (concat bingtranslate-history-text " from "
                                 bingtranslate-history-from " to "
                                 bingtranslate-history-to) bingtranslate-history-hash))
   (if (and (not (equal "" result))
            (not (equal nil result)))
       (message result)
-    (url-retrieve (bingtranslate-make-url bingtranslate-history-text
-                                          bingtranslate-history-from
-                                          bingtranslate-history-to) 'bingtranslate-url-callback)
-    ))
+    (url-retrieve (bingtranslate-make-url
+                   "Translate?"
+                   (list (list "text" bingtranslate-history-text)
+                         (list "from" bingtranslate-history-from)
+                         (list "to" bingtranslate-history-to)))
+                  'bingtranslate-url-callback)))
 
 (defun bingtranslate-show-history ()
   "Show translate history"
@@ -223,21 +288,27 @@
           (print k)
           (print (gethash k bingtranslate-history-hash))
           (print "--------------------------------------------------------"))
-    (switch-to-buffer "*translate-temp*")
-    ))
+    (switch-to-buffer "*translate-temp*")))
 
 (defun bingtranslate-add-pair (key from to)
   "Add a pair of language for translate."
   (interactive)
-  (setq result (gethash key bingtranslate-language-pair))
-  (if (or (member key bingtranslate-language-list)
-          (and (not (equal "" result))
-               (not (equal nil result))))
+  ;; add to language list
+  (setq result (gethash key bingtranslate-language-pair-hash))
+  (if (or (member key bingtranslate-language-pair-list)
+          (or (member key bingtranslate-language-list)
+              (and (not (equal "" result))
+                   (not (equal nil result)))))
       (message (format "[bingtranslate] Language pair named %s exist!" key))
     (progn
-      (setq bingtranslate-language-list (cons key bingtranslate-language-list))
-      (puthash key (list from to) bingtranslate-language-pair))
-    ))
+      (setq bingtranslate-language-pair-list (append bingtranslate-language-pair-list (list key)))
+      ;;(setq bingtranslate-language-list (append bingtranslate-language-list (list key)))
+      (puthash key (list from to) bingtranslate-language-pair-hash))))
+
+(condition-case nil
+    (bingtranslate-checklanguageslist)
+  (error
+   (message "[bingtranslate] Cannot connect to network!")))
 
 (provide 'bing-translate)
 

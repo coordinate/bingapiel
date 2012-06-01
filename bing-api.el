@@ -73,10 +73,20 @@
          (result nil))
     (when (string-match "{\"access_token\":\"\\(.*\\)\",\"token_type\"" output 0)
       (setq result (match-string 1 output)))
-    (if (equal nil result)
-        (error "[bingapi] Cannot get access_token!"))
-    (url-hexify-string result)
+    (when (equal nil result)
+      (error "[bingapi] Cannot get access_token!"))
+    ;;(url-hexify-string result)
+    result
     ))
+
+(defun bingapi-check-accesstoken (xmldata)
+  "Check if access_token expired."
+  (if (string-match "Get a new access token from the Authorization Server" xmldata 0)
+      (progn
+        ;;(kill-buffer (current-buffer))
+        (setq bingtranslate-appId (bingapi-post-and-get-accesstoken))
+        (message "[bingapi] The incoming token has expired! We got new one.")
+        "expired")))
 
 (provide 'bing-api)
 
