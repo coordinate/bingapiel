@@ -1,4 +1,3 @@
-2012-03-22  zxy  <gcoordinate@gmail.com>
+2012-06-02  zxy  <gcoordinate@gmail.com>
 
-	* bing-translate-api.el (bingtranslate-add-pair): Add new function.
-
+	* V1.0 release.

@@ -4,7 +4,7 @@
 ;; Author: zxy <gcoordinate@gmail.com>
 ;; Maintainer: zxy <gcoordinate@gmail.com>
 ;; Created: May 2012
-;; Version: 0.1
+;; Version: 1.0
 
 ;; This file is NOT part of Emacs.
 ;;
@@ -24,6 +24,7 @@
 
 ;; Installation
 ;; ============
+;; Do not need to install
 ;;
 
 (require 'url)
@@ -83,10 +84,11 @@
   "Check if access_token expired."
   (if (string-match "Get a new access token from the Authorization Server" xmldata 0)
       (progn
-        ;;(kill-buffer (current-buffer))
         (setq bingtranslate-appId (bingapi-post-and-get-accesstoken))
         (message "[bingapi] The incoming token has expired! We got new one.")
-        "expired")))
+        "expired")
+    (if (string-match "Invalid URL" xmldata 0)
+        (error "[bingapi] Your translate text maybe too long."))))
 
 (provide 'bing-api)
 

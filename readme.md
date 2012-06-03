@@ -1,32 +1,32 @@
-WHATE IS TRANSLATE-EMACS-TOOLKIT FOR
+WHATE IS BINGAPIEL FOR
 ==========
 
-This is a open source elisp liberary for emacs to use bing api.
-It provides support for **bing translate api**.
-It tested on emacs 24.
+This is a open source elisp library to use bing-api in emacs.
+Now bingapiel provides support for **bing translate api**.
+It tested in emacs 24.
 
 INSTALL
 ==========
 
 1. Clone bingapiel from githum.
 
-    git clone
+    git clone git@github.com:coordinate/bingapiel.git
 
 2. Add bingapiel to load-path and configure.
 
-    (add-to-list 'load-path "bingapiel-path")
+    (add-to-list 'load-path (concat plugin-path "bingapiel"))
 
     ;; Your bing api client_id.
-    (defvar bingapi-clientid "bingapiel")
+    (defvar bingapi-clientid "667f3adb-e22d-4dca-b476-ca536c0a6d8a")
 
     ;; Your bing api client_secret.
-    (defvar bingapi-clientsecret "bq4h4FPS14CBDCBs7tsqiqVD6YVG4bmt3ftkbKBQKmk=")
+    (defvar bingapi-clientsecret "xBTJ5Ee5RSFf++uVjSVKVFcsoswQlDyb8kPp5wSyrV8=")
 
-    ;; Your priority language to translate from.
-    (defvar bingtranslate-from-priority "en")
+    ;; list all language codes may be used
+    (defvar bingtranslate-language-list '("en" "zh-CHS" "ja"))
 
-    ;; Your priority language to translate to.
-    (defvar bingtranslate-to-priority "zh-CHS")
+    ;; Turn auto detect language code on
+    (defvar bingtranslate-auto-detect t)
 
     (require 'bing-translate)
 
@@ -35,25 +35,37 @@ INSTALL
 
     ;; add a pair of language
     ;; Parameters: "pair name" "from language" "to language"
-    (bingtranslate-add-pair "1" "zh-CHS" "en")
+    (bingtranslate-add-pair "1" "zh-CHS" "ja")
 
 3. Restart emacs or eval-region.
 
-4. *M-x bingtranslate-region-or-input* and input
-   text, from languge, to language. Then translation result show in minibuffer and shear plate.
+4. *M-x bingtranslate-region-or-input* and input text, from languge,
+to language. Then translation results show in minibuffer and shear
+plate.
 
-5. *M-x bingtranslate-show-history* will show translate history at a temp buffer.
+5. *M-x bingtranslate-show-history* will show translate history at a
+temp buffer.
 
-register BING API
+REGISTER BING-API
 ==========
 
-1.
+1. Register [Windows Live ID](https://signup.live.com/signup.aspx).
+
+2. Subscribe to the Microsoft Translator API on
+[Azure Marketplace](http://go.microsoft.com/?linkid=9782667). Basic
+subscriptions, up to 2 million characters a month, are free.
+
+3. Register your application
+[Azure DataMarket](https://datamarket.azure.com/developer/applications/).
+Click on "Register". In the "Register your application" dialog box,
+you can define your own Client ID and Name. Take a note of the client
+ID and the client secret value.
 
 MORE INFORMATION
 ==========
 
 You can find more information at:
 
--[my github](http://github)
+-[My github](http://github)
 
--[my blog](http://coordinate.sinaapp.com)
+-[My blog](http://coordinate.sinaapp.com)
