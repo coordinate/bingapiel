@@ -8,11 +8,11 @@ It tested in emacs 24.
 INSTALL
 ==========
 
-1. Clone bingapiel from githum.
+Clone bingapiel from githum.
 
     git clone git@github.com:coordinate/bingapiel.git
 
-2. Install curl with *sudo apt-get install curl* on Ubuntu. Download
+Install curl with *sudo apt-get install curl* on Ubuntu. Download
 [curl Win32 - Generic](http://curl.haxx.se/gknw.net/7.26.0/dist-w32/curl-7.26.0-devel-mingw32.zip)
 and add *curl.exe* to *PATH* on Windows.
 
@@ -21,22 +21,22 @@ and add *curl.exe* to *PATH* on Windows.
 3. Configure bingapiel in your *.emacs* file. The following *client_id* and
 *client_secret* are my. You'd better register your own.
 
-	(add-to-list 'load-path (concat plugin-path "bingapiel"))
-	;; Your bing api client_id.
-	(defvar bingapi-clientid "667f3adb-e22d-4dca-b476-ca536c0a6d8a")
-	;; Your bing api client_secret.
-	(defvar bingapi-clientsecret "xBTJ5Ee5RSFf++uVjSVKVFcsoswQlDyb8kPp5wSyrV8=")
-	;; list all language codes may be used
-	(defvar bingtranslate-language-list '("en" "zh-CHS" "ja"))
-	;; Turn auto detect language code on
-	(defvar bingtranslate-auto-detect t)
+    (add-to-list 'load-path (concat plugin-path "bingapiel"))
+    ;; Your bing api client_id.
+    (defvar bingapi-clientid "667f3adb-e22d-4dca-b476-ca536c0a6d8a")
+    ;; Your bing api client_secret.
+    (defvar bingapi-clientsecret "xBTJ5Ee5RSFf++uVjSVKVFcsoswQlDyb8kPp5wSyrV8=")
+    ;; list all language codes may be used
+    (defvar bingtranslate-language-list '("en" "zh-CHS" "ja"))
+    ;; Turn auto detect language code on
+    (defvar bingtranslate-auto-detect t)
 
-	(require 'bing-translate)
-	;; key bounding
-	(global-set-key [M-f1] 'bingtranslate-region-or-input)
-	;; add a pair of language
-	;; Parameters: "pair name" "from language" "to language"
-	(bingtranslate-add-pair "1" "zh-CHS" "ja")
+    (require 'bing-translate)
+    ;; key bounding
+    (global-set-key [M-f1] 'bingtranslate-region-or-input)
+    ;; add a pair of language
+    ;; Parameters: "pair name" "from language" "to language"
+    (bingtranslate-add-pair "1" "zh-CHS" "ja")
 
 4. Restart emacs or eval-region.
 
