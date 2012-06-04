@@ -2,8 +2,8 @@ WHAT IS BINGAPIEL FOR
 ==========
 
 This is an open source elisp library to use bing-api in emacs.
-Now bingapiel provides support for **bing translate api**.
-It tested in emacs 24.
+Now bingapiel provides support for **bing translate api**.  It
+tested in emacs 24.
 
 INSTALL
 ==========
@@ -18,8 +18,9 @@ and add *curl.exe* to *PATH* on Windows.
 
     (setenv "PATH" (concat (concat program-path "/curl-7.26.0-devel-mingw32/bin;") (getenv "PATH")))
 
-3. Configure bingapiel in your *.emacs* file. The following *client_id* and
-*client_secret* are my. You'd better register your own.
+Configure bingapiel in your *.emacs* file. The following
+*client_id* and *client_secret* are my. You'd better register
+your own.
 
     (add-to-list 'load-path (concat plugin-path "bingapiel"))
     ;; Your bing api client_id.
@@ -38,29 +39,29 @@ and add *curl.exe* to *PATH* on Windows.
     ;; Parameters: "pair name" "from language" "to language"
     (bingtranslate-add-pair "1" "zh-CHS" "ja")
 
-4. Restart emacs or eval-region.
+Restart emacs or eval-region.
 
-5. *M-x bingtranslate-region-or-input* and input text, from languge,
-to language. Then translation results show in minibuffer and shear
-plate.
+*M-x bingtranslate-region-or-input* and input text, from languge,
+to language. Then translation results show in minibuffer and
+shear plate.
 
-6. *M-x bingtranslate-show-history* will show translate history at a
+*M-x bingtranslate-show-history* will show translate history at a
 temp buffer.
 
 REGISTER BING-API
 ==========
 
-1. Register [Windows Live ID](https://signup.live.com/signup.aspx).
+Register [Windows Live ID](https://signup.live.com/signup.aspx).
 
-2. Subscribe to the Microsoft Translator API on
+Subscribe to the Microsoft Translator API on
 [Azure Marketplace](http://go.microsoft.com/?linkid=9782667). Basic
 subscriptions, up to 2 million characters a month, are free.
 
-3. Register your application
+Register your application
 [Azure DataMarket](https://datamarket.azure.com/developer/applications/).
-Click on "Register". In the "Register your application" dialog box,
-you can define your own Client ID and Name. Take a note of the client
-ID and the client secret value.
+Click on "Register". In the "Register your application" dialog
+box, you can define your own Client ID and Name. Take a note of
+the client ID and the client secret value.
 
 MORE INFORMATION
 ==========
