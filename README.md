@@ -70,4 +70,4 @@ You can find more information at:
 
 -[My github](https://github.com/coordinate/bingapiel)
 
--[My blog](http://coordinate.sinaapp.com)
+-[My blog](http://coordinate.sinaapp.com/?p=178)
