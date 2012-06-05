@@ -2,13 +2,13 @@ WHAT IS BINGAPIEL FOR
 ==========
 
 This is an open source elisp library to use bing-api in emacs.
-Now bingapiel provides support for **bing translate api**.  It
+Now bingapiel provides support for **bing translate api**. It
 tested in emacs 24.
 
 INSTALL
 ==========
 
-Clone bingapiel from githum.
+Clone bingapiel from github.
 
     git clone git@github.com:coordinate/bingapiel.git
 
@@ -68,6 +68,6 @@ MORE INFORMATION
 
 You can find more information at:
 
--[My github](http://github)
+-[My github](https://github.com/coordinate/bingapiel)
 
 -[My blog](http://coordinate.sinaapp.com)
