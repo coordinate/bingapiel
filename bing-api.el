@@ -72,11 +72,13 @@
                           "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13"))
          (output (shell-command-to-string command))
          (result nil))
-    (when (string-match "{\"access_token\":\"\\(.*\\)\",\"token_type\"" output 0)
+    ;; (message output)
+    (when (string-match "\"access_token\":\"\\(.*\\)\",\"expires_in" output 0)
       (setq result (match-string 1 output)))
     (when (equal nil result)
       (error "[bingapi] Cannot get access_token!"))
     ;;(url-hexify-string result)
+    ;;(message result)
     result
     ))
 

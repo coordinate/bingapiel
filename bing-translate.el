@@ -8,7 +8,7 @@
 
 ;; This file is NOT part of Emacs.
 ;;
-;; GNU Emacs is free software: you can redistribute it and/or modify it under
+;; GNU Emacs is free software: you can redistribute it and/or change it under
 ;; the terms of the GNU General Public License as published by the Free
 ;; Software Foundation, either version 3 of the License, or (at your option)
 ;; any later version.
@@ -113,7 +113,7 @@
               (mapconcat (lambda (arg)
                            (concat (url-hexify-string (car arg)) "="
                                    (decode-coding-string
-                                    (url-hexify-string (car (cdr arg)))
+                                    (url-hexify-string (cadr arg))
                                     'utf-8))) args "&"))
     url))
 
@@ -192,7 +192,6 @@ supported by the Translation Service."
 
 (defun bingtranslate-priority-code (ignorecode codes)
   "get priority language code"
-  (message ignorecode)
   (setq firstcode (car codes))
   (if (or (equal nil codes)
           (equal 0 (length codes)))
@@ -299,7 +298,7 @@ supported by the Translation Service."
            (not (equal nil pair)))
       (progn
         (setq bingtranslate-history-from (car pair))
-        (setq bingtranslate-history-to (car (cdr pair))))
+        (setq bingtranslate-history-to (cadr pair)))
     (progn
       (setq bingtranslate-history-from tmptype)
       (setq to-priority (bingtranslate-priority-code
@@ -319,12 +318,7 @@ supported by the Translation Service."
   (if (and (not (equal "" result))
            (not (equal nil result)))
       (message result)
-    (url-retrieve (bingtranslate-make-url
-                   "Translate?"
-                   (list (list "text" bingtranslate-history-text)
-                         (list "from" bingtranslate-history-from)
-                         (list "to" bingtranslate-history-to)))
-                  'bingtranslate-url-callback)))
+    (bingtranslate-url-retrieve)))
 
 (defun bingtranslate-show-history ()
   "Show translate history"
