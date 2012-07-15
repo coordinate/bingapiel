@@ -214,12 +214,14 @@ supported by the Translation Service."
       ;; get translate
       (when (string-match "\">\\(.*\\)</string>" xmldata 0)
         (setq result (match-string 1 xmldata)))
+      ;;(message xmldata)
       (puthash (concat bingtranslate-history-text " from "
                        bingtranslate-history-from " to "
                        bingtranslate-history-to)
                result bingtranslate-history-hash)
       (kill-new result)
-      (message result))))
+      (message result)
+      )))
 
 (defun bingtranslate-url-retrieve ()
   "call url-retrieve to translate."

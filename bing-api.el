@@ -71,14 +71,17 @@
                           bingapi-scope
                           "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13"))
          (output (shell-command-to-string command))
-         (result nil))
-    ;; (message output)
-    (when (string-match "\"access_token\":\"\\(.*\\)\",\"expires_in" output 0)
+         (result nil)
+         (errors nil))
+    (when (string-match "\"access_token\":\"\\(.*?\\)\"" output 0)
       (setq result (match-string 1 output)))
+    (when (string-match "couldn't connect to host" output 0)
+      (setq errors "couldn't connect to host"))
+    (when (not (equal nil errors))
+      (error (concat "[bingapi] Cannot get access_token! Because: " errors)))
     (when (equal nil result)
-      (error "[bingapi] Cannot get access_token!"))
+      (error (concat "[bingapi] Cannot get access_token! Because: " output)))
     ;;(url-hexify-string result)
-    ;;(message result)
     result
     ))
 
