@@ -234,7 +234,7 @@ supported by the Translation Service."
 
 (defun bingtranslate-curl-get ()
   "curl get to translate."
-  (let* ((command (format "curl -H \"Authorization: bearer %s\"
+  (let* ((command (format "curl -k -H \"Authorization: bearer %s\"
 \"%sTranslate?text=%s&from=%s&to=%s\""
                           (bingapi-post-and-get-accesstoken)
                           bingtranslate-service

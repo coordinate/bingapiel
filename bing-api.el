@@ -54,22 +54,22 @@
 
 ;; defun
 
-(defun bingapi-make-url (request-parameters-list)
-  "Generate the url to send to bing api service."
-  (setq bing-service (concat "\""bingapi-service ""))
-  (while request-parameters-list
-    (setq bing-service (concat bing-service (car request-parameters-list)))
-    (setq request-parameters-list (cdr request-parameters-list)))
-  (concat bingapi-service"\""))
+;; (defun bingapi-make-url (request-parameters-list)
+;;   "Generate the url to send to bing api service."
+;;   (setq bing-service (concat "\""bingapi-service ""))
+;;   (while request-parameters-list
+;;     (setq bing-service (concat bing-service (car request-parameters-list)))
+;;     (setq request-parameters-list (cdr request-parameters-list)))
+;;   (concat bingapi-service"\""))
 
 (defun bingapi-post-and-get-accesstoken ()
   "Post your ID and get access_token."
-  (let* ((command (format "curl -d \"grant_type=%s&client_id=%s&client_secret=%s&scope=%s\" %s"
+  (let* ((command (format "curl -k -d \"grant_type=%s&client_id=%s&client_secret=%s&scope=%s\" %s"
                           "client_credentials"
                           (url-hexify-string bingapi-clientid)
                           (url-hexify-string bingapi-clientsecret)
                           bingapi-scope
-                          "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13"))
+                          bingapi-oauth-service))
          (output (shell-command-to-string command))
          (result nil)
          (errors nil))
